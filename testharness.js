@@ -878,6 +878,7 @@ policies and contribution forms [3].
         this.timeout_id = null;
         this.is_done = false;
 
+        this.properties = properties;
         this.timeout_length = properties.timeout ? properties.timeout : settings.test_timeout;
 
         this.message = null;
