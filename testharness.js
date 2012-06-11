@@ -58,6 +58,19 @@ policies and contribution forms [3].
  *
  * would run test_function with a timeout of 1s.
  *
+ * Additionally, test-specific metadata can be passed in the properties. These
+ * are used when the individual test has different metadata from that stored 
+ * in the <head>.
+ * The recognized metadata properties are:
+ *
+ *    help - The url of the part of the specification being tested
+ *
+ *    assert - A human readable description of what the test is attempting 
+ *             to prove
+ *
+ *    author - Name and contact information for the author of the test in the
+ *             format: "Name <email_addr>" or "Name http://contact/url"
+ *
  * == Asynchronous Tests ==
  *
  * Testing asynchronous features is somewhat more complex since the result of
@@ -132,9 +145,9 @@ policies and contribution forms [3].
  *                   document in some cases e.g. a SVG test loaded in an HTML
  *                   wrapper
  *
- * explicit_timeout - disable file timeout; only stop waiting for results 
- *                    when the timeout() function is called (typically for 
- *                    use when integrating with some existing test framework 
+ * explicit_timeout - disable file timeout; only stop waiting for results
+ *                    when the timeout() function is called (typically for
+ *                    use when integrating with some existing test framework
  *                    that has its own timeout mechanism).
  *
  * == Determining when all tests are complete ==
@@ -158,7 +171,7 @@ policies and contribution forms [3].
  * used. To make this easier, the generate_tests function allows a single
  * function to be called with each set of parameters in a list:
  *
- * generate_tests(test_function, parameter_lists)
+ * generate_tests(test_function, parameter_lists, properties)
  *
  * For example:
  *
@@ -174,6 +187,9 @@ policies and contribution forms [3].
  *
  * Note that the first item in each parameter list corresponds to the name of
  * the test.
+ *
+ * The properties argument is identical to that for test(). This may be a 
+ * single object (used for all generated tests) or an array.
  *
  * == Callback API ==
  *
@@ -376,14 +392,16 @@ policies and contribution forms [3].
         tests.end_wait();
     }
 
-    function generate_tests(func, args) {
-        forEach(args, function(x)
+    function generate_tests(func, args, properties) {
+        forEach(args, function(x, i)
                 {
                     var name = x[0];
                     test(function()
                          {
                              func.apply(this, x.slice(1));
-                         }, name);
+                         }, 
+                         name, 
+                         Array.isArray(properties) ? properties[i] : properties);
                 });
     }
 
@@ -1105,7 +1123,6 @@ policies and contribution forms [3].
         clearTimeout(this.timeout_id);
         if (this.timeout_length !== null)
         {
-           
             this.timeout_id = setTimeout(function() {
                                              this_obj.timeout();
                                          }, this.timeout_length);
