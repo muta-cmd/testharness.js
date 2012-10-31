@@ -345,9 +345,10 @@ policies and contribution forms [3].
     var debug = false;
     // default timeout is 5 seconds, test can override if needed
     var settings = {
-      output:true,
-      timeout:5000,
-      test_timeout:2000
+        output:true,
+        timeout:5000,
+        test_timeout:2000,
+        single_test:false
     };
 
     var xhtml_ns = "http://www.w3.org/1999/xhtml";
@@ -439,6 +440,9 @@ policies and contribution forms [3].
 
     function done() {
         tests.end_wait();
+        if (tests.single_test) {
+            tests.tests[0].done();
+        }
     }
 
     function generate_tests(func, args, properties) {
@@ -602,14 +606,14 @@ policies and contribution forms [3].
         assert(actual === true, "assert_true", description,
                                 "expected true got ${actual}", {actual:actual});
     };
-    expose(assert_true, "assert_true");
+    expose_assert(assert_true, "assert_true");
 
     function assert_false(actual, description)
     {
         assert(actual === false, "assert_false", description,
                                  "expected false got ${actual}", {actual:actual});
     };
-    expose(assert_false, "assert_false");
+    expose_assert(assert_false, "assert_false");
 
     function same_value(x, y) {
         if (y !== y)
@@ -645,7 +649,7 @@ policies and contribution forms [3].
                                              "expected ${expected} but got ${actual}",
                                              {expected:expected, actual:actual});
     };
-    expose(assert_equals, "assert_equals");
+    expose_assert(assert_equals, "assert_equals");
 
     function assert_not_equals(actual, expected, description)
     {
@@ -657,7 +661,7 @@ policies and contribution forms [3].
                                               "got disallowed value ${actual}",
                                               {actual:actual});
     };
-    expose(assert_not_equals, "assert_not_equals");
+    expose_assert(assert_not_equals, "assert_not_equals");
 
     function assert_in_array(actual, expected, description)
     {
@@ -665,7 +669,7 @@ policies and contribution forms [3].
                                                "value ${actual} not in array ${expected}",
                                                {actual:actual, expected:expected});
     }
-    expose(assert_in_array, "assert_in_array");
+    expose_assert(assert_in_array, "assert_in_array");
 
     function assert_object_equals(actual, expected, description)
     {
@@ -704,7 +708,7 @@ policies and contribution forms [3].
          }
          check_equal(actual, expected, []);
     };
-    expose(assert_object_equals, "assert_object_equals");
+    expose_assert(assert_object_equals, "assert_object_equals");
 
     function assert_array_equals(actual, expected, description)
     {
@@ -726,7 +730,7 @@ policies and contribution forms [3].
                    {i:i, expected:expected[i], actual:actual[i]});
         }
     }
-    expose(assert_array_equals, "assert_array_equals");
+    expose_assert(assert_array_equals, "assert_array_equals");
 
     function assert_approx_equals(actual, expected, epsilon, description)
     {
@@ -743,7 +747,7 @@ policies and contribution forms [3].
                "expected ${expected} +/- ${epsilon} but got ${actual}",
                {expected:expected, actual:actual, epsilon:epsilon});
     };
-    expose(assert_approx_equals, "assert_approx_equals");
+    expose_assert(assert_approx_equals, "assert_approx_equals");
 
     function assert_regexp_match(actual, expected, description) {
         /*
@@ -754,13 +758,13 @@ policies and contribution forms [3].
                "expected ${expected} but got ${actual}",
                {expected:expected, actual:actual});
     }
-    expose(assert_regexp_match, "assert_regexp_match");
+    expose_assert(assert_regexp_match, "assert_regexp_match");
 
     function assert_class_string(object, class_string, description) {
         assert_equals({}.toString.call(object), "[object " + class_string + "]",
                       description);
     }
-    expose(assert_class_string, "assert_class_string");
+    expose_assert(assert_class_string, "assert_class_string");
 
 
     function _assert_own_property(name) {
@@ -771,8 +775,8 @@ policies and contribution forms [3].
                    "expected property ${p} missing", {p:property_name});
         };
     }
-    expose(_assert_own_property("assert_exists"), "assert_exists");
-    expose(_assert_own_property("assert_own_property"), "assert_own_property");
+    expose_assert(_assert_own_property("assert_exists"), "assert_exists");
+    expose_assert(_assert_own_property("assert_own_property"), "assert_own_property");
 
     function assert_not_exists(object, property_name, description)
     {
@@ -780,7 +784,7 @@ policies and contribution forms [3].
                "assert_not_exists", description,
                "unexpected property ${p} found", {p:property_name});
     };
-    expose(assert_not_exists, "assert_not_exists");
+    expose_assert(assert_not_exists, "assert_not_exists");
 
     function _assert_inherits(name) {
         return function (object, property_name, description)
@@ -804,8 +808,8 @@ policies and contribution forms [3].
                    {p:property_name});
         };
     }
-    expose(_assert_inherits("assert_inherits"), "assert_inherits");
-    expose(_assert_inherits("assert_idl_attribute"), "assert_idl_attribute");
+    expose_assert(_assert_inherits("assert_inherits"), "assert_inherits");
+    expose_assert(_assert_inherits("assert_idl_attribute"), "assert_idl_attribute");
 
     function assert_readonly(object, property_name, description)
     {
@@ -824,7 +828,7 @@ policies and contribution forms [3].
              object[property_name] = initial_value;
          }
     };
-    expose(assert_readonly, "assert_readonly");
+    expose_assert(assert_readonly, "assert_readonly");
 
     function assert_throws(code, func, description)
     {
@@ -875,7 +879,7 @@ policies and contribution forms [3].
                 QUOTA_EXCEEDED_ERR: 'QuotaExceededError',
                 TIMEOUT_ERR: 'TimeoutError',
                 INVALID_NODE_TYPE_ERR: 'InvalidNodeTypeError',
-                DATA_CLONE_ERR: 'DataCloneError',
+                DATA_CLONE_ERR: 'DataCloneError'
             };
 
             var name = code in code_name_map ? code_name_map[code] : code;
@@ -944,18 +948,18 @@ policies and contribution forms [3].
             }
         }
     }
-    expose(assert_throws, "assert_throws");
+    expose_assert(assert_throws, "assert_throws");
 
     function assert_unreached(description) {
          assert(false, "assert_unreached", description,
                 "Reached unreachable code");
     }
-    expose(assert_unreached, "assert_unreached");
+    expose_assert(assert_unreached, "assert_unreached");
 
     function assert_any(assert_func, actual, expected_array) 
     {
-        var args = [].slice.call(arguments, 3)
-        var errors = []
+        var args = [].slice.call(arguments, 3);
+        var errors = [];
         var passed = false;
         forEach(expected_array, 
                 function(expected)
@@ -971,7 +975,7 @@ policies and contribution forms [3].
             throw new AssertionError(errors.join("\n\n"));
         }
     }
-    expose(assert_any, "assert_any");
+    expose_assert(assert_any, "assert_any");
 
     function Test(name, properties)
     {
@@ -1185,6 +1189,8 @@ policies and contribution forms [3].
         this.timeout_length = settings.timeout;
         this.timeout_id = null;
 
+        this.single_test = settings.single_test;
+
         this.start_callbacks = [];
         this.test_done_callbacks = [];
         this.all_done_callbacks = [];
@@ -1236,6 +1242,9 @@ policies and contribution forms [3].
         if (properties.explicit_timeout) {
             this.timeout_length = null;
         }
+        if (properties.single_test) {
+            this.single_test = true;
+        }
 
         if (func)
         {
@@ -1249,6 +1258,19 @@ policies and contribution forms [3].
             };
         }
         this.set_timeout();
+
+        if (this.single_test)
+        {
+            //Create the test
+            var t = async_test();
+            onerror = function(msg)
+            {
+                t.status = t.FAIL;
+                t.message = msg;
+                t.done();
+                return false;
+            };
+        }
     };
 
     Tests.prototype.set_timeout = function()
@@ -1454,7 +1476,7 @@ policies and contribution forms [3].
             tests.timeout();
         }
     }
-    expose(timeout, 'timeout');
+    expose_assert(timeout, 'timeout');
 
     function add_start_callback(callback) {
         tests.start_callbacks.push(callback);
@@ -2034,6 +2056,27 @@ policies and contribution forms [3].
             target = target[components[i]];
         }
         target[components[components.length - 1]] = object;
+    }
+
+    function expose_assert(func, name)
+    {
+        var wrapped = function() {
+            if(tests.single_test) {
+                var t = tests.tests[0];
+                var args = arguments;
+                t.step(
+                    function() 
+                    {
+                        func.apply(t, args);
+                    }
+                );
+            }
+            else
+            {
+                func.apply(this, arguments);
+            }
+        };
+        expose(wrapped, name);
     }
 
     function forEach_windows(callback) {
